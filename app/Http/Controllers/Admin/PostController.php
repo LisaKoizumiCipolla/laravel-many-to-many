@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Type;
 use App\Models\Post;
+use App\Models\Technology;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -29,7 +30,8 @@ class PostController extends Controller
     {
         //
         $types = Type::all();
-        return view ('admin.posts.create', compact('types'));
+        $technologies = Technology::all();
+        return view ('admin.posts.create', compact('types', 'technologies'));
     }
 
     /**
@@ -39,18 +41,27 @@ class PostController extends Controller
     {
         //
 
+       // $technologies = Technology::all()->pluck('id')->toArray();
+
         $data = $request->validate([
             'title' => ['required', 'unique:posts', 'min:10', 'max:255'],
-            'image' => ['file'],
+            'image' => ['required', 'image'],
             'content' => ['required', 'min:10'],
+            'technologies' => ['exists:technologies,id'],
             'type_id' => ['required', 'exists:types,id']
         ]);
+
+
         $img_path = Storage::put('uploads', $request['image']);
 
         $data['image'] = $img_path;
         $data["slug"] = Str::of($data['title'])->slug('-');
 
         $newPost = Post::create($data);
+
+        if ($request->has('technologies')){
+            $newPost->technologies()->sync($request->technologies);
+        }
 
         return redirect()->route('admin.posts.index');
 

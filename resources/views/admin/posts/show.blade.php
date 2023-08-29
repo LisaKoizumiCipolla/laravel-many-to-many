@@ -7,6 +7,13 @@
             <div class="card">
                 <h5 class="card-header">ID: {{ $post->id }} SLUG: {{ $post->slug }} -- {{ $post->type ? $post->type->name : '' }}</h5>
 
+                @if ( count($post->technologies) > 0 )
+                    <h6 class="card-header">
+                        @foreach ($post->technologies as $technology)
+                        {{ $technology->name }} --
+                        @endforeach
+                    </h6>
+                @endif
 
                 @if (str_starts_with( $post->image, 'http' ) )
                     <img src="{{ $post->image }}" alt="{{ $post->title }}"> 
