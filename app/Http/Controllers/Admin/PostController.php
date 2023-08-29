@@ -63,7 +63,7 @@ class PostController extends Controller
             $newPost->technologies()->sync($request->technologies);
         }
 
-        return redirect()->route('admin.posts.index');
+        return redirect()->route('admin.posts.show');
 
     }
 
@@ -83,7 +83,8 @@ class PostController extends Controller
     {
         //
         $types = Type::all();
-        return view('admin.posts.edit', compact('post', 'types'));
+        $technologies = Technology::all();
+        return view('admin.posts.edit', compact('post', 'types', 'technologies'));
     }
 
     /**
@@ -96,12 +97,17 @@ class PostController extends Controller
             'title' => ['required', 'min:2', Rule::unique('posts')->ignore($post->id), 'max:255'],
             'image' => ['url:https'],
             'content' => ['required', 'min:10'],
+            'technologies' => ['exists:technologies,id'],
             'type_id' => ['required', 'exists:types,id']
         ]);
 
         $data["slug"] = Str::of($data['title'])->slug('-');
 
         $post->update($data);
+
+        if ($request->has('technologies')){
+            $post->technologies()->sync($request->technologies);
+        }
 
         return redirect()->route('admin.posts.show', compact('post'));
     }
